@@ -531,7 +531,7 @@ app.post('/api/liabilities', authMiddleware, (req, res) => {
   const now = new Date().toISOString();
 
   runSql(
-    'INSERT INTO liabilities VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    'INSERT INTO liabilities VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
     [id, name, category, amount, currency, description, null, interest_rate, remain_months, repayment_type, repayment_day, start_date, tag_id, req.user.id, now, now]
   );
 

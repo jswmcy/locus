@@ -2924,7 +2924,7 @@ body {
 .theme-fab {
   position: fixed;
   bottom: 24px;
-  right: 24px;
+  left: 24px;
   width: 48px;
   height: 48px;
   border-radius: 50%;
