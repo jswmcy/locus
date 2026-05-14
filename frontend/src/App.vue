@@ -1427,17 +1427,15 @@ export default {
       backupLoading.value = true
       backupMessage.value = ''
       try {
-        const formData = new FormData()
-        formData.append('file', file)
-        await axios.post('/api/backup/restore', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        })
-        backupMessage.value = '✅ 导入成功！页面将刷新...'
+        const text = await file.text()
+        const json = JSON.parse(text)
+        await axios.post('/api/backup', json)
+        backupMessage.value = '✅ 导入成功！页面即将刷新...'
         backupMessageType.value = 'success'
-        setTimeout(() => fetchData(), 500)
+        setTimeout(() => location.reload(), 1000)
       } catch (err) {
         console.error('导入失败:', err)
-        backupMessage.value = '❌ 导入失败: ' + (err.response?.data?.error || '未知错误')
+        backupMessage.value = '❌ 导入失败: ' + (err.response?.data?.error || err.message || '未知错误')
         backupMessageType.value = 'error'
       } finally {
         backupLoading.value = false
