@@ -40,11 +40,7 @@
           </button>
         </form>
         
-        <div class="login-footer">
-          <button class="theme-btn-inline" @click="toggleTheme">
-            {{ theme === 'dark' ? '☀️ 亮色模式' : '🌙 暗色模式' }}
-          </button>
-        </div>
+
       </div>
     </div>
 
@@ -69,11 +65,6 @@
           </button>
         </nav>
         
-        <div class="theme-toggle">
-          <button class="theme-btn" @click="toggleTheme" :title="theme === 'dark' ? '切换亮色' : '切换暗色'">
-            {{ theme === 'dark' ? '☀️' : '🌙' }}
-          </button>
-        </div>
       </aside>
 
       <!-- 主内容区 -->
@@ -744,6 +735,11 @@
         </div>
       </div>
     </template>
+    
+    <!-- 全局主题切换按钮 -->
+    <button class="theme-fab" @click="toggleTheme" :title="theme === 'dark' ? '切换亮色' : '切换暗色'">
+      {{ theme === 'dark' ? '☀️' : '🌙' }}
+    </button>
   </div>
 </template>
 
@@ -1075,13 +1071,13 @@ export default {
 
     // 标签辅助方法
     const getItemTags = (item) => {
-      if (!item.tag_ids || !Array.isArray(item.tag_ids)) return []
-      return tags.value.filter(t => item.tag_ids.includes(t.id))
+      if (!item.tag_id) return []
+      return tags.value.filter(t => t.id === item.tag_id)
     }
 
     const getTagAssetCount = (tagId) => {
-      const count = assets.value.filter(a => a.tag_ids && a.tag_ids.includes(tagId)).length
-      const lCount = liabilities.value.filter(l => l.tag_ids && l.tag_ids.includes(tagId)).length
+      const count = assets.value.filter(a => a.tag_id === tagId).length
+      const lCount = liabilities.value.filter(l => l.tag_id === tagId).length
       return count + lCount
     }
 
@@ -1099,7 +1095,7 @@ export default {
       return assets.value.filter(a => {
         if (filterCategory.value && a.category !== filterCategory.value) return false
         if (filterTag.value) {
-          const itemTagIds = (a.tag_ids && Array.isArray(a.tag_ids)) ? a.tag_ids : []
+          const itemTagIds = a.tag_id ? [a.tag_id] : []
           if (!itemTagIds.includes(filterTag.value)) return false
         }
         return true
@@ -1111,7 +1107,7 @@ export default {
       return liabilitiesWithPayment.value.filter(l => {
         if (filterLiabCategory.value && l.category !== filterLiabCategory.value) return false
         if (filterLiabTag.value) {
-          const itemTagIds = (l.tag_ids && Array.isArray(l.tag_ids)) ? l.tag_ids : []
+          const itemTagIds = l.tag_id ? [l.tag_id] : []
           if (!itemTagIds.includes(filterLiabTag.value)) return false
         }
         return true
@@ -1216,7 +1212,7 @@ export default {
         remain_months: null,
         repayment_type: 'equal',
         repayment_day: null,
-        tagIds: (item.tag_ids && Array.isArray(item.tag_ids)) ? [...item.tag_ids] : []
+        tagIds: item.tag_id ? [item.tag_id] : []
       }
       showAddModal.value = true
     }
@@ -1236,7 +1232,7 @@ export default {
         remain_months: item.remain_months,
         repayment_type: item.repayment_type || 'equal',
         repayment_day: item.repayment_day,
-        tagIds: (item.tag_ids && Array.isArray(item.tag_ids)) ? [...item.tag_ids] : []
+        tagIds: item.tag_id ? [item.tag_id] : []
       }
       showAddModal.value = true
     }
@@ -1255,7 +1251,7 @@ export default {
           description: form.value.description,
           location: form.value.location,
           is_cash: form.value.is_cash,
-          tag_ids: form.value.tagIds
+          tag_id: form.value.tagIds[0] || null
         } : {
           name: form.value.name,
           category: form.value.category,
@@ -1267,7 +1263,7 @@ export default {
           remain_months: form.value.remain_months,
           repayment_type: form.value.repayment_type,
           repayment_day: form.value.repayment_day,
-          tag_ids: form.value.tagIds
+          tag_id: form.value.tagIds[0] || null
         }
         
         if (editingItem.value) {
@@ -1855,21 +1851,6 @@ body {
   text-align: center;
 }
 
-.theme-btn-inline {
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  font-size: 14px;
-  cursor: pointer;
-  padding: 8px 16px;
-  border-radius: 8px;
-}
-
-.theme-btn-inline:hover {
-  background: var(--hover-bg);
-  color: var(--text-primary);
-}
-
 /* 用户信息样式 */
 .user-info {
   display: flex;
@@ -1979,22 +1960,7 @@ body {
 
 .nav-icon { font-size: 18px; }
 
-.theme-toggle {
-  margin-top: auto;
-  padding-top: 16px;
-  border-top: 1px solid var(--border-color);
-}
 
-.theme-btn {
-  width: 100%;
-  padding: 12px;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  font-size: 20px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
 
 .theme-btn:hover {
   background: var(--hover-bg);
@@ -2952,5 +2918,30 @@ body {
   padding: 4px 12px;
   font-size: 13px;
   border-radius: 6px;
+}
+
+/* 全局主题切换浮动按钮 */
+.theme-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 1000;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.theme-fab:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.2);
 }
 </style>
