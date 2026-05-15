@@ -1,0 +1,42 @@
+# 合并镜像 Dockerfile (推荐 NAS 使用)
+# 构建: docker build -t family-assets -f Dockerfile.merged .
+# 运行: docker run -d -p 3001:3001 -v ./data:/app/data family-assets
+
+FROM node:20-alpine AS builder
+
+# 构建前端
+WORKDIR /app/frontend
+COPY frontend/package*.json ./
+RUN rm -f package-lock.json
+RUN npm config set registry https://registry.npmmirror.com
+RUN npm install
+COPY frontend/ ./
+RUN chmod +x node_modules/.bin/vite
+RUN npm run build
+
+# 构建后端
+WORKDIR /app/backend
+COPY backend/package*.json ./
+RUN npm install --production
+COPY backend/ ./
+
+# 运行镜像
+FROM node:20-alpine
+WORKDIR /app
+
+# 复制前端构建产物
+COPY --from=builder /app/frontend/dist ./dist
+
+# 复制后端
+COPY --from=builder /app/backend/node_modules ./node_modules
+COPY backend/package*.json ./
+COPY backend/server.js ./
+
+# 创建数据目录
+RUN mkdir -p data
+
+# 暴露端口
+EXPOSE 3001
+
+# 启动命令
+CMD ["node", "server.js"]

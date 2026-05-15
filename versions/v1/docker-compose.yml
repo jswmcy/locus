@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  family-assets:
+    build:
+      context: .
+      dockerfile: Dockerfile.merged
+    container_name: family-assets
+    ports:
+      - "3001:3001"
+    environment:
+      - JWT_SECRET=your-secret-key-here
+      - PORT=3001
+    volumes:
+      - family-assets-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  family-assets-data:
